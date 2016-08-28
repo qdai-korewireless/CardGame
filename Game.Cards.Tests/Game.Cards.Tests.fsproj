@@ -57,6 +57,7 @@
   <ItemGroup>
     <Compile Include="DealingCardTests.fs" />
     <None Include="packages.config" />
+    <Compile Include="HandCardTests.fs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Game.Cards\Game.Cards.fsproj">

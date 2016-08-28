@@ -11,6 +11,7 @@ type Card = Card of Suit*Rank
 type Deck = Card list
 type ShuffledDeck = ShuffledDeck of Deck
 type Deal = Deal of ShuffledDeck*Card option
+type Hand = Card list
 
 let getAllSuits() =
     [Clubs;Diamonds;Hearts;Spades]
