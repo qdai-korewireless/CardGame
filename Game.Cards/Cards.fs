@@ -7,11 +7,28 @@ type Rank =
     | Eight | Nine  | Ten
     | Jack  | Queen | King
     | Ace
+
 type Card = Card of Suit*Rank
 type Deck = Card list
 type ShuffledDeck = ShuffledDeck of Deck
 type Deal = Deal of ShuffledDeck*Card option
 type Hand = Card list
+
+let rankScore card =
+    match card with
+    |Card(_,Two) -> 2
+    |Card(_,Three) -> 3
+    |Card(_,Four) -> 4
+    |Card(_,Five) -> 5
+    |Card(_,Six) -> 6
+    |Card(_,Seven) -> 7
+    |Card(_,Eight) -> 8
+    |Card(_,Nine) -> 9
+    |Card(_,Ten) -> 10
+    |Card(_,Jack) -> 11
+    |Card(_,Queen) -> 12
+    |Card(_,King) -> 13
+    |Card(_,Ace) -> 14
 
 let getAllSuits() =
     [Clubs;Diamonds;Hearts;Spades]

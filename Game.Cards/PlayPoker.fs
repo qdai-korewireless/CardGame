@@ -27,3 +27,31 @@ let dealHand players numOfCardsEachPlayer deck: Player list =
     //revert cards order for each player
     handedPlayers |> List.iter (fun(p) ->p.Hand <- (p.Hand |> List.rev))
     handedPlayers
+
+let sortCardsForPlayers players =
+    players |> List.iter (fun(p) -> p.Hand <- sortCardsInHand p.Hand) 
+    players
+
+
+//Rule 1: High Hand Rule
+let highHandRule player1 player2 = 
+
+    let rec sortPlayers player1 player2 cardPos= 
+        if cardPos = (player1.Hand |> List.length) then
+            0
+        else
+            let card1 = player1.Hand.[cardPos]
+            let card2 = player2.Hand.[cardPos]
+            let card1Value = rankScore card1
+            let card2Value = rankScore card2
+            if card1Value > card2Value then
+                -1
+            else if (card1Value < card2Value) then
+                1
+            else
+                sortPlayers player1 player2 (cardPos+1)
+
+    sortPlayers player1 player2 0
+
+let evaluate players =
+    players |> List.sortWith highHandRule
