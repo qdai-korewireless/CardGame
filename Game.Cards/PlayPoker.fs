@@ -54,13 +54,14 @@ let highHandRule player1 player2 =
                 sortPlayers player1 player2 (cardPos+1)
 
     sortPlayers player1 player2 0
-//Rule: Four of Kind
-let groupCards player = 
+
+//Rule: Three/Four of Kind
+let groupCardsByRank player = 
     player.Hand |> Seq.groupBy (fun(Card(_,c)) -> c) |> Seq.map (fun(i,g) -> (g |> Seq.length), (g|>Seq.head)) |> Seq.sortBy (fun(x,_) -> -x) 
 
 let numberOfKindRule player1 player2 numOfKind = 
-    let h1Count,h1Card = groupCards player1 |> Seq.head
-    let h2Count,h2Card = groupCards player2 |> Seq.head
+    let h1Count,h1Card = groupCardsByRank player1 |> Seq.head
+    let h2Count,h2Card = groupCardsByRank player2 |> Seq.head
 
     if h1Count = numOfKind && h2Count < numOfKind then
         -1
@@ -79,5 +80,23 @@ let fourOfKindRule player1 player2 =
 let threeOfKindRule player1 player2 = 
     numberOfKindRule player1 player2 3
 
+//Rule: Flush
+let groupCardsBySuit player = 
+    player.Hand |> Seq.groupBy (fun(Card(s,_)) -> s) |> Seq.map (fun(i,g) -> (g |> Seq.length), (g|>Seq.head)) |> Seq.sortBy (fun(x,_) -> -x) 
+
+let flushRule player1 player2 = 
+    let h1Count,h1Card = groupCardsBySuit player1 |> Seq.head
+    let h2Count,h2Card = groupCardsBySuit player2 |> Seq.head
+    if h1Count = 5 && h2Count < 5 then
+        -1
+    else if h2Count = 5 && h1Count < 5 then
+        1
+    else
+        0
+
 let evaluate players =
-    players |> sortWithRule highHandRule |> sortWithRule threeOfKindRule |> sortWithRule fourOfKindRule 
+    players 
+    |> sortWithRule highHandRule 
+    |> sortWithRule threeOfKindRule 
+    |> sortWithRule flushRule 
+    |> sortWithRule fourOfKindRule 
