@@ -123,11 +123,30 @@ let fullHouseRule player1 player2 =
                 0
     else 
         0
-
+//Rule: One pair
+let onePairRule player1 player2 = 
+    let g1 = groupCardsByRank player1 |> Seq.toList
+    let g2 = groupCardsByRank player2 |> Seq.toList
+    let p1IsOP = g1 |> Seq.length = 4 && (fst g1.[0]) = 2
+    let p2IsOP = g2 |> Seq.length = 4 && (fst g2.[0]) = 2
+    if p1IsOP && not p2IsOP then
+        -1
+    else if p2IsOP && not p1IsOP then
+        1
+    else
+        let p1c1 = rankScore (snd g1.[0])
+        let p2c1 = rankScore (snd g2.[0])
+        if p1c1 > p2c1 then
+            -1
+        else if p1c1 < p2c1 then
+            1
+        else
+            0
 
 let evaluate players =
     players 
     |> sortWithRule highHandRule 
+    |> sortWithRule onePairRule
     |> sortWithRule threeOfKindRule 
     |> sortWithRule flushRule 
     |> sortWithRule fullHouseRule 
