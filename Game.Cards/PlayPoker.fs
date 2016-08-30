@@ -32,8 +32,10 @@ let sortCardsForPlayers players =
     players |> List.iter (fun(p) -> p.Hand <- sortCardsInHand p.Hand) 
     players
 
+let sortWithRule rule = 
+    List.sortWith rule
 
-//Rule 1: High Hand Rule
+//Rule: High Hand Rule
 let highHandRule player1 player2 = 
 
     let rec sortPlayers player1 player2 cardPos= 
@@ -52,6 +54,24 @@ let highHandRule player1 player2 =
                 sortPlayers player1 player2 (cardPos+1)
 
     sortPlayers player1 player2 0
+//Rule: Four of Kind
+let fourOfKindRule player1 player2 = 
+    let hand1 = player1.Hand |> Seq.groupBy (fun(Card(_,c)) -> c) |> Seq.map (fun(i,g) -> (g |> Seq.length), (g|>Seq.head)) |> Seq.sortBy (fun(x,_) -> -x) 
+    let hand2 = player2.Hand |> Seq.groupBy (fun(Card(_,c)) -> c) |> Seq.map (fun(i,g) -> (g |> Seq.length), (g|>Seq.head)) |> Seq.sortBy (fun(x,_) -> -x) 
+    let h1Count,h1Card = hand1 |> Seq.head
+    let h2Count,h2Card = hand2 |> Seq.head
+
+    if h1Count = 4 && h2Count < 4 then
+        -1
+    else if h2Count = 4 && h1Count < 4 then
+        1
+    else if h1Count = 4 && h2Count = 4 then
+        if (rankScore h1Card) > (rankScore h2Card) then
+            -1
+        else
+            1
+    else
+        0
 
 let evaluate players =
-    players |> List.sortWith highHandRule
+    players |> List.sortWith highHandRule |> List.sortWith fourOfKindRule
