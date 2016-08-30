@@ -41,7 +41,7 @@ let ``should return 5 cards for each one of 4 players``() =
     actual |> should equal expected
 
 [<Test>]
-let ``player 3 should have certain cards``() = 
+let ``should player 3 have certain cards after dealing with 4 players``() = 
     let testPlayers = [{Name="Player 1";Hand=[];Position=1};
                       {Name="Player 2";Hand=[];Position=2};
                       {Name="Player 3";Hand=[];Position=3};

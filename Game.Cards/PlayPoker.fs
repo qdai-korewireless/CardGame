@@ -94,9 +94,41 @@ let flushRule player1 player2 =
     else
         0
 
+//Rule: Full House
+let fullHouseRule player1 player2 = 
+    let g1 = groupCardsByRank player1 |> Seq.toList
+    let g2 = groupCardsByRank player2 |> Seq.toList
+    let p1IsFH = g1 |> Seq.length = 2 && (fst g1.[0]) = 3
+    let p2IsFH = g2 |> Seq.length = 2 && (fst g2.[0]) = 3
+
+    if p1IsFH && not p2IsFH then
+        -1
+    else if p2IsFH && not p1IsFH then
+        1
+    else if p1IsFH && p2IsFH then
+        let p1c1 = rankScore (snd g1.[0])
+        let p2c1 = rankScore (snd g2.[0])
+        if p1c1 > p2c1 then
+            -1
+        else if p1c1 < p2c1 then
+            1
+        else
+            let p1c2 = rankScore (snd g1.[1])
+            let p2c2 = rankScore (snd g2.[1])
+            if p1c2 > p2c2 then
+                -1
+            else if p1c2 < p2c2 then
+                1
+            else
+                0
+    else 
+        0
+
+
 let evaluate players =
     players 
     |> sortWithRule highHandRule 
     |> sortWithRule threeOfKindRule 
     |> sortWithRule flushRule 
+    |> sortWithRule fullHouseRule 
     |> sortWithRule fourOfKindRule 
