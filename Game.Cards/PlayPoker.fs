@@ -38,8 +38,12 @@ let sortWithRule rule =
 let groupCardsByRank player = 
     player.Hand |> Seq.groupBy (fun(Card(_,c)) -> c) |> Seq.map (fun(i,g) -> (g |> Seq.length), (g|>Seq.head)) |> Seq.sortBy (fun(x,_) -> -x) 
 
-let groupCardsBySuit player = 
-    player.Hand |> Seq.groupBy (fun(Card(s,_)) -> s) |> Seq.map (fun(i,g) -> (g |> Seq.length), (g|>Seq.head)) |> Seq.sortBy (fun(x,_) -> -x) 
+let groupCardsBySuit hand = 
+    hand |> Seq.groupBy (fun(Card(s,_)) -> s) |> Seq.map (fun(i,g) -> (g |> Seq.length), (g|>Seq.head)) |> Seq.sortBy (fun(x,_) -> -x) 
+
+let cardsAreFlush hand = 
+    let count = groupCardsBySuit hand |> Seq.head |> fst
+    count = 5
 
 let cardsAreStraight (cards:Hand) = 
     let card1 = rankScore cards.[0]
@@ -51,6 +55,9 @@ let cardsAreStraight (cards:Hand) =
     if card1 = 14 then
         posibleResult <- (1+card2) = (card3 + card5) && (card4 + card4) = (1+card2)
     (card1+card5) = (card2 + card4) && (card3 + card3) = (card1+card5) || posibleResult
+
+let cardsAreStraightFlush hand = 
+    cardsAreStraight hand && cardsAreFlush hand
 
 //Rule: Straight
 let straightRule player1 player2 =
@@ -71,6 +78,27 @@ let straightRule player1 player2 =
             0
     else
         0
+
+//Rule: Straight Flush
+let straightFlushRule player1 player2 =
+    let p1STF = cardsAreStraightFlush player1.Hand
+    let p2STF = cardsAreStraightFlush player2.Hand
+    if p1STF && not p2STF then
+        -1
+    else if p2STF && not p1STF then
+        1
+    else if p1STF && p2STF then 
+        let p1c1 = rankScore player1.Hand.[0]
+        let p2c1 = rankScore player2.Hand.[0]
+        if p1c1 > p2c1 then
+            -1
+        else if p1c1 < p2c1 then
+            1
+        else
+            0
+    else
+        0
+
 //Rule: High Hand Rule
 let highHandRule player1 player2 = 
 
@@ -165,11 +193,11 @@ let threeOfKindRule player1 player2 =
 
 //Rule: Flush
 let flushRule player1 player2 = 
-    let h1Count,h1Card = groupCardsBySuit player1 |> Seq.head
-    let h2Count,h2Card = groupCardsBySuit player2 |> Seq.head
-    if h1Count = 5 && h2Count < 5 then
+    let p1IsFL = cardsAreFlush player1.Hand
+    let p2IsFL = cardsAreFlush player2.Hand
+    if p1IsFL && not p2IsFL then
         -1
-    else if h2Count = 5 && h1Count < 5 then
+    else if p2IsFL && not p1IsFL then
         1
     else
         0
@@ -215,3 +243,4 @@ let evaluate players =
     |> sortWithRule flushRule 
     |> sortWithRule fullHouseRule 
     |> sortWithRule fourOfKindRule 
+    |> sortWithRule straightFlushRule

@@ -175,3 +175,20 @@ let ``should player 2 win due to straight with Ace to Five``() =
     let actual = evaluate [player1;player2;player3]
 
     actual |> should equal expected
+
+[<Test>]
+let ``should player 2 win due to straight flush``() = 
+    let player1 = {Name="Player 1";
+                    Hand=[Card(Diamonds, Five);Card(Hearts, Five);Card(Diamonds, Five);Card(Diamonds, Five);Card(Diamonds, Three)];
+                    Position = 1}
+    let player2 = {Name="Player 2";
+                    Hand=[Card(Clubs, Ten);Card(Clubs, Nine);Card(Clubs, Eight);Card(Clubs, Seven);Card(Clubs, Six)];
+                    Position = 2}
+    let player3 = {Name="Player 3";
+                    Hand=[Card(Diamonds, Five);Card(Spades, Five);Card(Clubs, Five);Card(Hearts, Six);Card(Hearts, Ace)];
+                    Position = 3}
+    let expected = [player2;player1;player3]
+
+    let actual = evaluate [player1;player2;player3]
+
+    actual |> should equal expected
