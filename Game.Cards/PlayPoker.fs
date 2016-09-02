@@ -46,10 +46,11 @@ let cardsAreStraight (cards:Hand) =
     let card2 = rankScore cards.[1]
     let card3 = rankScore cards.[2]
     let card4 = rankScore cards.[3]
-    let mutable card5 = rankScore cards.[4]
-    if card5 = 14 then
-        card5 <- 1
-    (card1+card5) = (card2 + card4) && (card3 + card3) = (card1+card5)
+    let card5 = rankScore cards.[4]
+    let mutable posibleResult = false
+    if card1 = 14 then
+        posibleResult <- (1+card2) = (card3 + card5) && (card4 + card4) = (1+card2)
+    (card1+card5) = (card2 + card4) && (card3 + card3) = (card1+card5) || posibleResult
 
 //Rule: Straight
 let straightRule player1 player2 =
