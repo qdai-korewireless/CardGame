@@ -35,8 +35,8 @@ let sortCardsForPlayers players =
 let sortWithRule rule = 
     List.sortWith rule
 
-let groupCardsByRank player = 
-    player.Hand |> Seq.groupBy (fun(Card(_,c)) -> c) |> Seq.map (fun(i,g) -> (g |> Seq.length), (g|>Seq.head)) |> Seq.sortBy (fun(x,_) -> -x) 
+let groupCardsByRank (hand:Hand) = 
+    hand |> Seq.groupBy (fun(Card(_,c)) -> c) |> Seq.map (fun(i,g) -> (g |> Seq.length), (g|>Seq.head)) |> Seq.sortBy (fun(x,_) -> -x) 
 
 let groupCardsBySuit hand = 
     hand |> Seq.groupBy (fun(Card(s,_)) -> s) |> Seq.map (fun(i,g) -> (g |> Seq.length), (g|>Seq.head)) |> Seq.sortBy (fun(x,_) -> -x) 
@@ -59,45 +59,22 @@ let cardsAreStraight (cards:Hand) =
 let cardsAreStraightFlush hand = 
     cardsAreStraight hand && cardsAreFlush hand
 
-//Rule: Straight
-let straightRule player1 player2 =
-    let p1ST = cardsAreStraight player1.Hand
-    let p2ST = cardsAreStraight player2.Hand
-    if p1ST && not p2ST then
+let rankSameType (hand1:Hand) (hand2:Hand) = 
+    let p1c1 = rankScore hand1.[0]
+    let p2c1 = rankScore hand2.[0]
+    if p1c1 > p2c1 then
         -1
-    else if p2ST && not p1ST then
+    else if p1c1 < p2c1 then
         1
-    else if p1ST && p2ST then 
-        let p1c1 = rankScore player1.Hand.[0]
-        let p2c1 = rankScore player2.Hand.[0]
-        if p1c1 > p2c1 then
-            -1
-        else if p1c1 < p2c1 then
-            1
-        else
-            0
     else
         0
-
-//Rule: Straight Flush
-let straightFlushRule player1 player2 =
-    let p1STF = cardsAreStraightFlush player1.Hand
-    let p2STF = cardsAreStraightFlush player2.Hand
-    if p1STF && not p2STF then
-        -1
-    else if p2STF && not p1STF then
-        1
-    else if p1STF && p2STF then 
-        let p1c1 = rankScore player1.Hand.[0]
-        let p2c1 = rankScore player2.Hand.[0]
-        if p1c1 > p2c1 then
-            -1
-        else if p1c1 < p2c1 then
-            1
-        else
-            0
-    else
-        0
+let compareHands fn (hand1:Hand) (hand2:Hand) = 
+    let r1, r2 = (fn hand1), (fn hand2)
+    match (r1,r2) with
+    |(true,false) -> -1
+    |(false,true) -> 1
+    |(true,true) -> rankSameType hand1 hand2
+    |(false,false) -> 0
 
 //Rule: High Hand Rule
 let highHandRule player1 player2 = 
@@ -118,61 +95,54 @@ let highHandRule player1 player2 =
                 sortPlayers player1 player2 (cardPos+1)
 
     sortPlayers player1 player2 0
-//Rule: One pair
-let onePairRule player1 player2 = 
-    let g1 = groupCardsByRank player1 |> Seq.toList
-    let g2 = groupCardsByRank player2 |> Seq.toList
-    let p1IsOP = g1 |> Seq.length = 4 && (fst g1.[0]) = 2
-    let p2IsOP = g2 |> Seq.length = 4 && (fst g2.[0]) = 2
-    if p1IsOP && not p2IsOP then
-        -1
-    else if p2IsOP && not p1IsOP then
-        1
-    else if p2IsOP && p1IsOP then
-        let p1c1 = rankScore (snd g1.[0])
-        let p2c1 = rankScore (snd g2.[0])
+
+//Rule: Straight
+let straightRule player1 player2 =
+    compareHands cardsAreStraight player1.Hand player2.Hand
+
+//Rule: Straight Flush
+let straightFlushRule player1 player2 =
+    compareHands cardsAreStraightFlush player1.Hand player2.Hand
+
+let rec rankScoreAndCompare (g1:(int*Card) list) (g2:(int*Card) list) index =
+    if index = -1 then
+        0
+    else
+        let card1 = snd g1.[index]
+        let card2 = snd g2.[index]
+
+        let p1c1 = rankScore card1
+        let p2c1 = rankScore card2
         if p1c1 > p2c1 then
             -1
         else if p1c1 < p2c1 then
             1
         else
-            0
-    else
-        0
+            rankScoreAndCompare g1 g2 (index-1)
+
+let cardsArePairs numOfGroup fstPairCount compareToCardIndex (hand1:Hand) (hand2:Hand) = 
+    let g1 = groupCardsByRank hand1 |> Seq.toList
+    let g2 = groupCardsByRank hand2 |> Seq.toList
+    let r1 = g1 |> Seq.length = numOfGroup && (fst g1.[0]) = fstPairCount
+    let r2 = g2 |> Seq.length = numOfGroup && (fst g2.[0]) = fstPairCount
+    match (r1,r2) with
+    |(true,false) -> -1
+    |(false,true) -> 1
+    |(true,true) -> rankScoreAndCompare g1 g2 compareToCardIndex
+    |(false,false) -> 0
+
+//Rule: One pair
+let onePairRule player1 player2 = 
+    cardsArePairs 4 2 0 player1.Hand player2.Hand
 
 //Rule: Two pair
 let twoPairRule player1 player2 = 
-    let g1 = groupCardsByRank player1 |> Seq.toList
-    let g2 = groupCardsByRank player2 |> Seq.toList
-    let p1IsTP = g1 |> Seq.length = 3 && (fst g1.[0]) = 2
-    let p2IsTP = g2 |> Seq.length = 3 && (fst g2.[0]) = 2
-    if p1IsTP && not p2IsTP then
-        -1
-    else if p2IsTP && not p1IsTP then
-        1
-    else if p1IsTP && p2IsTP then
-        let p1c1 = rankScore (snd g1.[0])
-        let p2c1 = rankScore (snd g2.[0])
-        if p1c1 > p2c1 then
-            -1
-        else if p1c1 < p2c1 then
-            1
-        else
-            let p1c2 = rankScore (snd g1.[1])
-            let p2c2 = rankScore (snd g2.[1])
-            if p1c2 > p2c2 then
-                -1
-            else if p1c2 < p2c2 then
-                1
-            else
-                0
-    else
-        0
+    cardsArePairs 3 2 1 player1.Hand player2.Hand
 
 //Rule: Three/Four of Kind
 let numberOfKindRule player1 player2 numOfKind = 
-    let h1Count,h1Card = groupCardsByRank player1 |> Seq.head
-    let h2Count,h2Card = groupCardsByRank player2 |> Seq.head
+    let h1Count,h1Card = groupCardsByRank player1.Hand |> Seq.head
+    let h2Count,h2Card = groupCardsByRank player2.Hand |> Seq.head
 
     if h1Count = numOfKind && h2Count < numOfKind then
         -1
@@ -204,34 +174,7 @@ let flushRule player1 player2 =
 
 //Rule: Full House
 let fullHouseRule player1 player2 = 
-    let g1 = groupCardsByRank player1 |> Seq.toList
-    let g2 = groupCardsByRank player2 |> Seq.toList
-    let p1IsFH = g1 |> Seq.length = 2 && (fst g1.[0]) = 3
-    let p2IsFH = g2 |> Seq.length = 2 && (fst g2.[0]) = 3
-
-    if p1IsFH && not p2IsFH then
-        -1
-    else if p2IsFH && not p1IsFH then
-        1
-    else if p1IsFH && p2IsFH then
-        let p1c1 = rankScore (snd g1.[0])
-        let p2c1 = rankScore (snd g2.[0])
-        if p1c1 > p2c1 then
-            -1
-        else if p1c1 < p2c1 then
-            1
-        else
-            let p1c2 = rankScore (snd g1.[1])
-            let p2c2 = rankScore (snd g2.[1])
-            if p1c2 > p2c2 then
-                -1
-            else if p1c2 < p2c2 then
-                1
-            else
-                0
-    else 
-        0
-
+    cardsArePairs 2 3 1 player1.Hand player2.Hand
 
 let evaluate players =
     players 
