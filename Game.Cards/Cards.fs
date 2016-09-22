@@ -14,6 +14,13 @@ type ShuffledDeck = ShuffledDeck of Deck
 type Deal = Deal of ShuffledDeck*Card option
 type Hand = Card list
 
+let rankSuit card =
+    match card with
+    |Card(Clubs,_) -> 1
+    |Card(Diamonds,_) -> 2
+    |Card(Hearts,_) -> 3
+    |Card(Spades,_) -> 4
+
 let rankScore card =
     match card with
     |Card(_,Two) -> 2

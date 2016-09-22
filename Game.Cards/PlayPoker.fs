@@ -2,6 +2,22 @@
 open Game.Cards
 open Game.Player
 
+let matchCardSpecialCase card = 
+    match card with
+    |Card(_, Ace) -> Some Ace
+    |Card(_, Five) -> Some Five
+    |_ -> None
+
+let (===) a b = rankScore a = rankScore b 
+let (!==) a b = rankScore a <> rankScore b 
+let (>>>) a b = 
+    let c1 = (rankScore a - rankScore b = 1) 
+    let c2 = (matchCardSpecialCase a) = (Some Ace) && (matchCardSpecialCase b) = (Some Five)
+    (c1 || c2)
+
+let (<<<) a b = rankScore a - rankScore b = -1
+let (=*=) a b = rankSuit a = rankSuit b
+
 let optToCard opt = 
     match opt with
     | Some card -> card
@@ -35,155 +51,96 @@ let sortCardsForPlayers players =
 let sortWithRule rule = 
     List.sortWith rule
 
-let groupCardsByRank (hand:Hand) = 
-    hand |> Seq.groupBy (fun(Card(_,c)) -> c) |> Seq.map (fun(i,g) -> (g |> Seq.length), (g|>Seq.head)) |> Seq.sortBy (fun(x,_) -> -x) 
+type PokerRules = 
+    |HIGH_HAND 
+    |ONE_PAIR
+    |TWO_PAIR
+    |THREE_OF_KIND
+    |STRAIGHT
+    |FLUSH
+    |FULL_HOUSE
+    |FOUR_OF_KIND
+    |STRAIGHT_FLUSH
 
-let groupCardsBySuit hand = 
-    hand |> Seq.groupBy (fun(Card(s,_)) -> s) |> Seq.map (fun(i,g) -> (g |> Seq.length), (g|>Seq.head)) |> Seq.sortBy (fun(x,_) -> -x) 
+let getRuleValue rule =
+    match rule with
+    |Some HIGH_HAND -> 1 
+    |Some ONE_PAIR -> 2
+    |Some TWO_PAIR -> 3
+    |Some THREE_OF_KIND -> 4
+    |Some STRAIGHT -> 5
+    |Some FLUSH -> 6
+    |Some FULL_HOUSE -> 7
+    |Some FOUR_OF_KIND -> 8
+    |Some STRAIGHT_FLUSH -> 9
+    |None -> 0
 
-let cardsAreFlush hand = 
-    let count = groupCardsBySuit hand |> Seq.head |> fst
-    count = 5
+let getRule (hand:Hand) = 
+    let card1 = hand.[0]
+    let card2 = hand.[1]
+    let card3 = hand.[2]
+    let card4 = hand.[3]
+    let card5 = hand.[4]
 
-let cardsAreStraight (cards:Hand) = 
-    let card1 = rankScore cards.[0]
-    let card2 = rankScore cards.[1]
-    let card3 = rankScore cards.[2]
-    let card4 = rankScore cards.[3]
-    let card5 = rankScore cards.[4]
-    let mutable posibleResult = false
-    if card1 = 14 then
-        posibleResult <- (1+card2) = (card3 + card5) && (card4 + card4) = (1+card2)
-    (card1+card5) = (card2 + card4) && (card3 + card3) = (card1+card5) || posibleResult
+    let isFlush = card1 =*= card2 && card2  =*= card3 && card3 =*= card4 && card4 =*= card5
+    let isStraight = card1 >>> card2 && card2 >>> card3 && card3 >>> card4 && card4 >>> card5 
+    let isOnePair = card1 === card2 && card2 !== card3 && card3 !== card4 && card4 !== card5 
+    let isTwoPair = card1 === card2 && card2 !== card3 && card3 === card4 && card4 !== card5 
+    let isThreeOfKind = card1 === card2 && card2 === card3
+    let isFullHouse = card1 === card2 && card2 === card3 && card3 !== card4 && card4 === card5
+    let isFullOfKind = card1 === card2 && card2 === card3 && card3 === card4
+    let isStraightFlush = isFlush && isStraight
 
-let cardsAreStraightFlush hand = 
-    cardsAreStraight hand && cardsAreFlush hand
-
-let rankSameType (hand1:Hand) (hand2:Hand) = 
-    let p1c1 = rankScore hand1.[0]
-    let p2c1 = rankScore hand2.[0]
-    if p1c1 > p2c1 then
-        -1
-    else if p1c1 < p2c1 then
-        1
+    if isStraightFlush then
+        Some STRAIGHT_FLUSH 
+    else if isFullOfKind  then
+        Some FOUR_OF_KIND
+    else if isFullHouse then
+        Some FULL_HOUSE
+    else if isFlush then
+        Some FLUSH
+    else if isStraight then
+        Some STRAIGHT
+    else if isThreeOfKind then
+        Some THREE_OF_KIND
+    else if isTwoPair then
+        Some TWO_PAIR
+    else if isOnePair then
+        Some ONE_PAIR
     else
-        0
-let compareHands fn (hand1:Hand) (hand2:Hand) = 
-    let r1, r2 = (fn hand1), (fn hand2)
-    match (r1,r2) with
-    |(true,false) -> -1
-    |(false,true) -> 1
-    |(true,true) -> rankSameType hand1 hand2
-    |(false,false) -> 0
-
-//Rule: High Hand Rule
-let highHandRule player1 player2 = 
-
-    let rec sortPlayers player1 player2 cardPos= 
-        if cardPos = (player1.Hand |> List.length) then
-            0
-        else
-            let card1 = player1.Hand.[cardPos]
-            let card2 = player2.Hand.[cardPos]
-            let card1Value = rankScore card1
-            let card2Value = rankScore card2
-            if card1Value > card2Value then
-                -1
-            else if (card1Value < card2Value) then
-                1
-            else
-                sortPlayers player1 player2 (cardPos+1)
-
-    sortPlayers player1 player2 0
-
-//Rule: Straight
-let straightRule player1 player2 =
-    compareHands cardsAreStraight player1.Hand player2.Hand
-
-//Rule: Straight Flush
-let straightFlushRule player1 player2 =
-    compareHands cardsAreStraightFlush player1.Hand player2.Hand
-
-let rec rankScoreAndCompare (g1:(int*Card) list) (g2:(int*Card) list) index =
-    if index = -1 then
+        None 
+let rec compareHands (hand1:Hand) (hand2:Hand) cardPos = 
+    if cardPos = (hand1|> List.length) then
         0
     else
-        let card1 = snd g1.[index]
-        let card2 = snd g2.[index]
-
-        let p1c1 = rankScore card1
-        let p2c1 = rankScore card2
-        if p1c1 > p2c1 then
+        let card1 = hand1.[cardPos]
+        let card2 = hand2.[cardPos]
+        let card1Value = rankScore card1
+        let card2Value = rankScore card2
+        if card1Value > card2Value then
             -1
-        else if p1c1 < p2c1 then
+        else if (card1Value < card2Value) then
             1
         else
-            rankScoreAndCompare g1 g2 (index-1)
+            compareHands hand1 hand2 (cardPos+1)
 
-let cardsArePairs numOfGroup fstPairCount compareToCardIndex (hand1:Hand) (hand2:Hand) = 
-    let g1 = groupCardsByRank hand1 |> Seq.toList
-    let g2 = groupCardsByRank hand2 |> Seq.toList
-    let r1 = g1 |> Seq.length = numOfGroup && (fst g1.[0]) = fstPairCount
-    let r2 = g2 |> Seq.length = numOfGroup && (fst g2.[0]) = fstPairCount
-    match (r1,r2) with
-    |(true,false) -> -1
-    |(false,true) -> 1
-    |(true,true) -> rankScoreAndCompare g1 g2 compareToCardIndex
-    |(false,false) -> 0
-
-//Rule: One pair
-let onePairRule player1 player2 = 
-    cardsArePairs 4 2 0 player1.Hand player2.Hand
-
-//Rule: Two pair
-let twoPairRule player1 player2 = 
-    cardsArePairs 3 2 1 player1.Hand player2.Hand
-
-//Rule: Three/Four of Kind
-let numberOfKindRule player1 player2 numOfKind = 
-    let h1Count,h1Card = groupCardsByRank player1.Hand |> Seq.head
-    let h2Count,h2Card = groupCardsByRank player2.Hand |> Seq.head
-
-    if h1Count = numOfKind && h2Count < numOfKind then
+let sortPlayerByHands player1 player2 = 
+    let hand1 = player1.Hand
+    let hand2 = player2.Hand
+    let rule1 = getRule hand1
+    let rule2 = getRule hand2
+    let value1 = getRuleValue rule1
+    let value2 = getRuleValue rule2
+    if value1 > value2 then
         -1
-    else if h2Count = numOfKind && h1Count < numOfKind then
-        1
-    else if h1Count = numOfKind && h2Count = numOfKind then
-        if (rankScore h1Card) > (rankScore h2Card) then
-            -1
-        else
-            1
-    else
-        0
-let fourOfKindRule player1 player2 = 
-    numberOfKindRule player1 player2 4
-
-let threeOfKindRule player1 player2 = 
-    numberOfKindRule player1 player2 3
-
-//Rule: Flush
-let flushRule player1 player2 = 
-    let p1IsFL = cardsAreFlush player1.Hand
-    let p2IsFL = cardsAreFlush player2.Hand
-    if p1IsFL && not p2IsFL then
-        -1
-    else if p2IsFL && not p1IsFL then
+    else if value1 < value2 then 
         1
     else
-        0
+        compareHands hand1 hand2 0 
 
-//Rule: Full House
-let fullHouseRule player1 player2 = 
-    cardsArePairs 2 3 1 player1.Hand player2.Hand
 
-let evaluate players =
-    players 
-    |> sortWithRule highHandRule 
-    |> sortWithRule onePairRule
-    |> sortWithRule twoPairRule
-    |> sortWithRule threeOfKindRule 
-    |> sortWithRule straightRule
-    |> sortWithRule flushRule 
-    |> sortWithRule fullHouseRule 
-    |> sortWithRule fourOfKindRule 
-    |> sortWithRule straightFlushRule
+let sortPlayers players =
+    players |> List.sortWith sortPlayerByHands 
+let evaluate players = 
+    players |> sortCardsForPlayers |> sortPlayers 
+        
