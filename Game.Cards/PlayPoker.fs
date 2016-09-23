@@ -78,33 +78,26 @@ let getRule (hand:Hand) =
     let card4 = hand.[3]
     let card5 = hand.[4]
 
-    let isFlush = card1 =*= card2 && card2  =*= card3 && card3 =*= card4 && card4 =*= card5
-    let isStraight = card1 >>> card2 && card2 >>> card3 && card3 >>> card4 && card4 >>> card5 
-    let isOnePair = card1 === card2 && card2 !== card3 && card3 !== card4 && card4 !== card5 
-    let isTwoPair = card1 === card2 && card2 !== card3 && card3 === card4 && card4 !== card5 
-    let isThreeOfKind = card1 === card2 && card2 === card3
-    let isFullHouse = card1 === card2 && card2 === card3 && card3 !== card4 && card4 === card5
-    let isFullOfKind = card1 === card2 && card2 === card3 && card3 === card4
-    let isStraightFlush = isFlush && isStraight
+    let ruleMap = (
+        card1 === card2 && card2 === card3 && card3 === card4,
+        card1 === card2 && card2 === card3 && card3 !== card4 && card4 === card5,
+        card1 =*= card2 && card2  =*= card3 && card3 =*= card4 && card4 =*= card5,
+        card1 >>> card2 && card2 >>> card3 && card3 >>> card4 && card4 >>> card5,
+        card1 === card2 && card2 === card3,
+        card1 === card2 && card2 !== card3 && card3 === card4 && card4 !== card5,
+        card1 === card2 && card2 !== card3 && card3 !== card4 && card4 !== card5)
 
-    if isStraightFlush then
-        Some STRAIGHT_FLUSH 
-    else if isFullOfKind  then
-        Some FOUR_OF_KIND
-    else if isFullHouse then
-        Some FULL_HOUSE
-    else if isFlush then
-        Some FLUSH
-    else if isStraight then
-        Some STRAIGHT
-    else if isThreeOfKind then
-        Some THREE_OF_KIND
-    else if isTwoPair then
-        Some TWO_PAIR
-    else if isOnePair then
-        Some ONE_PAIR
-    else
-        None 
+    match ruleMap with
+    |(_,_,true,true,_,_,_) -> Some STRAIGHT_FLUSH
+    |(true,_,_,_,_,_,_) -> Some FOUR_OF_KIND
+    |(_,true,_,_,_,_,_) -> Some FULL_HOUSE
+    |(_,_,true,_,_,_,_) -> Some FLUSH
+    |(_,_,_,true,_,_,_) -> Some STRAIGHT
+    |(_,_,_,_,true,_,_) -> Some THREE_OF_KIND
+    |(_,_,_,_,_,true,_) -> Some TWO_PAIR
+    |(_,_,_,_,_,_,true) -> Some ONE_PAIR
+    |_ -> None
+ 
 let rec compareHands (hand1:Hand) (hand2:Hand) cardPos = 
     if cardPos = (hand1|> List.length) then
         0
@@ -113,7 +106,7 @@ let rec compareHands (hand1:Hand) (hand2:Hand) cardPos =
         let card2 = hand2.[cardPos]
         let card1Value = rankScore card1
         let card2Value = rankScore card2
-        if card1Value > card2Value then
+        if hand1 > hand2 then
             -1
         else if (card1Value < card2Value) then
             1
@@ -138,4 +131,3 @@ let sortPlayers players =
     players |> List.sortWith sortPlayerByHands 
 let evaluate players = 
     players |> sortCardsForPlayers |> sortPlayers 
-        
