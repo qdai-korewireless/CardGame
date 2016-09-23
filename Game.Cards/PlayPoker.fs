@@ -24,36 +24,18 @@ let optToCard opt =
     | Some card -> card
     | None -> failwith "input was None"
 
-let bind fn (opt:Option<'a>) =
-    if opt.IsSome then
-        opt.Value |> fn
-    else
-        None
-let getNextCard deck= 
-    let remDeck,aCard = dealCard deck
-    if aCard = None then
-        None
-    else
-        Some (remDeck,aCard)
-
-let dealNextPlayer (players:Player list) turn numOfCardsEachPlayer (deckAndCard:ShuffledDeck*Card option) = 
-    let remDeck,card = deckAndCard
-    let hand = players.[turn].Hand
-    let handLength = hand |> Seq.length
-    if (hand |> Seq.length) = numOfCardsEachPlayer then
-        None
-    else
-        players.[turn].Hand <- card.Value::hand
-        Some remDeck
-
-let rec dealCardToPlayers (players:Player list) turn numOfCardsEachPlayer deck = 
-    let nextTurn = (turn+1) % (players|>Seq.length)
-    getNextCard deck |> bind (dealNextPlayer players turn numOfCardsEachPlayer) |> bind (dealCardToPlayers players nextTurn numOfCardsEachPlayer)  
-
 let dealHand players numOfCardsEachPlayer deck: Player list = 
     let numOfPlayers = players |> List.length
-    let turn = 0
-    dealCardToPlayers players turn numOfCardsEachPlayer deck |> ignore
+    let iter = numOfPlayers * numOfCardsEachPlayer-1
+    let mutable remDeck = deck
+    for i in seq{0..iter} do
+        let pos = i%numOfPlayers
+        let hand = players.[pos].Hand
+        let tempDeck, aCard = dealCard remDeck
+        remDeck <- tempDeck
+        if aCard.IsSome then
+            players.[pos].Hand <- aCard.Value::hand
+
     //revert cards order for each player
     players |> List.iter (fun(p) ->p.Hand <- (p.Hand |> List.rev))
     players
@@ -151,7 +133,6 @@ let sortPlayerByHands player1 player2 =
         1
     else
         compareHands hand1 hand2 0 
-
 
 let sortPlayers players =
     players |> List.sortWith sortPlayerByHands 
