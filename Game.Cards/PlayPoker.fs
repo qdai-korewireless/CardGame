@@ -2,6 +2,7 @@
 open Game.Cards
 open Game.Player
 
+let NumOfCardsPerPlayer = 5
 let matchCardSpecialCase card = 
     match card with
     |Card(_, Ace) -> Some Ace
@@ -23,26 +24,39 @@ let optToCard opt =
     | Some card -> card
     | None -> failwith "input was None"
 
+let bind fn (opt:Option<'a>) =
+    if opt.IsSome then
+        opt.Value |> fn
+    else
+        None
+let getNextCard deck= 
+    let remDeck,aCard = dealCard deck
+    if aCard = None then
+        None
+    else
+        Some (remDeck,aCard)
+
+let dealNextPlayer (players:Player list) turn numOfCardsEachPlayer (deckAndCard:ShuffledDeck*Card option) = 
+    let remDeck,card = deckAndCard
+    let hand = players.[turn].Hand
+    let handLength = hand |> Seq.length
+    if (hand |> Seq.length) = numOfCardsEachPlayer then
+        None
+    else
+        players.[turn].Hand <- card.Value::hand
+        Some remDeck
+
+let rec dealCardToPlayers (players:Player list) turn numOfCardsEachPlayer deck = 
+    let nextTurn = (turn+1) % (players|>Seq.length)
+    getNextCard deck |> bind (dealNextPlayer players turn numOfCardsEachPlayer) |> bind (dealCardToPlayers players nextTurn numOfCardsEachPlayer)  
+
 let dealHand players numOfCardsEachPlayer deck: Player list = 
     let numOfPlayers = players |> List.length
     let turn = 0
-
-    let rec dealCardToPlayers (players:Player list) deck turn = 
-        if turn = numOfCardsEachPlayer*numOfPlayers then
-            players
-        else
-            let remDeck,aCard = dealCard deck
-            if aCard = None then
-                players
-            else
-                let aPlayer =  players.[turn % numOfPlayers]
-                aPlayer.Hand <- (optToCard aCard) :: aPlayer.Hand
-                dealCardToPlayers players remDeck (turn+1)
-
-    let handedPlayers = dealCardToPlayers players deck turn
+    dealCardToPlayers players turn numOfCardsEachPlayer deck |> ignore
     //revert cards order for each player
-    handedPlayers |> List.iter (fun(p) ->p.Hand <- (p.Hand |> List.rev))
-    handedPlayers
+    players |> List.iter (fun(p) ->p.Hand <- (p.Hand |> List.rev))
+    players
 
 let sortCardsForPlayers players =
     players |> List.iter (fun(p) -> p.Hand <- sortCardsInHand p.Hand) 
