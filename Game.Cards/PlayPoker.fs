@@ -27,11 +27,6 @@ let (=!!=) (hand1:Hand) (hand2:Hand) =
     let v2 = hand2 |> Seq.map(rankScore) |> Seq.toArray
     v1 =!= v2
 
-let optToCard opt = 
-    match opt with
-    | Some card -> card
-    | None -> failwith "input was None"
-
 let dealHand players numOfCardsEachPlayer deck: Player list = 
     let numOfPlayers = players |> List.length
     let iter = numOfPlayers * numOfCardsEachPlayer-1
