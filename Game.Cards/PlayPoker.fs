@@ -2,7 +2,6 @@
 open Game.Cards
 open Game.Player
 
-let NumOfCardsPerPlayer = 5
 let matchCardSpecialCase card = 
     match card with
     |Card(_, Ace) -> Some Ace
@@ -18,6 +17,15 @@ let (>>>) a b =
 
 let (<<<) a b = rankScore a - rankScore b = -1
 let (=*=) a b = rankSuit a = rankSuit b
+let (=!=) v1 v2=
+    if v1>v2 then -1
+    else if v1<v2 then 1
+    else 0 
+
+let (=!!=) (hand1:Hand) (hand2:Hand) = 
+    let v1 = hand1 |> Seq.map(rankScore) |> Seq.toArray
+    let v2 = hand2 |> Seq.map(rankScore) |> Seq.toArray
+    v1 =!= v2
 
 let optToCard opt = 
     match opt with
@@ -43,9 +51,6 @@ let dealHand players numOfCardsEachPlayer deck: Player list =
 let sortCardsForPlayers players =
     players |> List.iter (fun(p) -> p.Hand <- sortCardsInHand p.Hand) 
     players
-
-let sortWithRule rule = 
-    List.sortWith rule
 
 type PokerRules = 
     |HIGH_HAND 
@@ -97,35 +102,15 @@ let getRule (hand:Hand) =
     |(_,_,_,_,_,true,_) -> Some TWO_PAIR
     |(_,_,_,_,_,_,true) -> Some ONE_PAIR
     |_ -> None
- 
-let rec compareHands (hand1:Hand) (hand2:Hand) cardPos = 
-    if cardPos = (hand1|> List.length) then
-        0
-    else
-        let card1 = hand1.[cardPos]
-        let card2 = hand2.[cardPos]
-        let card1Value = rankScore card1
-        let card2Value = rankScore card2
-        if hand1 > hand2 then
-            -1
-        else if (card1Value < card2Value) then
-            1
-        else
-            compareHands hand1 hand2 (cardPos+1)
 
 let sortPlayerByHands player1 player2 = 
-    let hand1 = player1.Hand
-    let hand2 = player2.Hand
-    let rule1 = getRule hand1
-    let rule2 = getRule hand2
-    let value1 = getRuleValue rule1
-    let value2 = getRuleValue rule2
-    if value1 > value2 then
-        -1
-    else if value1 < value2 then 
-        1
-    else
-        compareHands hand1 hand2 0 
+    let value1 = player1.Hand |> getRule |> getRuleValue
+    let value2 = player2.Hand |> getRule |> getRuleValue
+    let cr = value1 =!= value2
+    if cr = 0 then
+        player1.Hand =!!= player2.Hand 
+    else 
+        cr
 
 let sortPlayers players =
     players |> List.sortWith sortPlayerByHands 
