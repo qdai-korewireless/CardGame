@@ -14,8 +14,6 @@ let (>>>) a b =
     let c1 = (rankScore a - rankScore b = 1) 
     let c2 = (matchCardSpecialCase a) = (Some Ace) && (matchCardSpecialCase b) = (Some Five)
     (c1 || c2)
-
-let (<<<) a b = rankScore a - rankScore b = -1
 let (=*=) a b = rankSuit a = rankSuit b
 let (=!=) v1 v2=
     if v1>v2 then -1
