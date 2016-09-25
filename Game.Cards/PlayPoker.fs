@@ -68,11 +68,11 @@ let getRule (hand:Hand) =
     let card5 = hand.[4]
 
     let ruleMap = (
-        card1 === card2 && card2 === card3 && card3 === card4,
+        card1 === card2 && card2 === card3 && card3 === card4 && card4 !== card5,
         card1 === card2 && card2 === card3 && card3 !== card4 && card4 === card5,
-        card1 =*= card2 && card2  =*= card3 && card3 =*= card4 && card4 =*= card5,
+        card1 =*= card2 && card2 =*= card3 && card3 =*= card4 && card4 =*= card5,
         card1 >>> card2 && card2 >>> card3 && card3 >>> card4 && card4 >>> card5,
-        card1 === card2 && card2 === card3,
+        card1 === card2 && card2 === card3 && card3 !== card4 && card4 !== card5,
         card1 === card2 && card2 !== card3 && card3 === card4 && card4 !== card5,
         card1 === card2 && card2 !== card3 && card3 !== card4 && card4 !== card5)
 
