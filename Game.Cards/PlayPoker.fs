@@ -45,17 +45,8 @@ let sortCardsForPlayers players =
     players |> List.iter (fun(p) -> p.Hand <- sortCardsInHand p.Hand) 
     players
 
-type PokerRules = 
-    |HIGH_HAND 
-    |ONE_PAIR
-    |TWO_PAIR
-    |THREE_OF_KIND
-    |STRAIGHT
-    |FLUSH
-    |FULL_HOUSE
-    |FOUR_OF_KIND
-    |STRAIGHT_FLUSH
-
+type PokerRules = |HIGH_HAND|ONE_PAIR|TWO_PAIR|THREE_OF_KIND|STRAIGHT|FLUSH|FULL_HOUSE|FOUR_OF_KIND|STRAIGHT_FLUSH 
+    
 let getRuleValue rule =
     match rule with
     |Some HIGH_HAND -> 1 
