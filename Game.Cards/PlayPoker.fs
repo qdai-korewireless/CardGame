@@ -15,15 +15,11 @@ let (>>>) a b =
     let c2 = (matchCardSpecialCase a) = (Some Ace) && (matchCardSpecialCase b) = (Some Five)
     (c1 || c2)
 let (=*=) a b = rankSuit a = rankSuit b
-let (=!=) v1 v2=
-    if v1>v2 then -1
-    else if v1<v2 then 1
-    else 0 
 
 let (=!!=) (hand1:Hand) (hand2:Hand) = 
     let v1 = hand1 |> Seq.map(rankScore) |> Seq.toArray
     let v2 = hand2 |> Seq.map(rankScore) |> Seq.toArray
-    v1 =!= v2
+    if v1 > v2 then -1 else if v1< v2 then 1 else 0
 
 let dealHand players numOfCardsEachPlayer deck: Player list = 
     let numOfPlayers = players |> List.length
@@ -90,7 +86,7 @@ let getRule (hand:Hand) =
 let sortPlayerByHands player1 player2 = 
     let value1 = player1.Hand |> getRule |> getRuleValue
     let value2 = player2.Hand |> getRule |> getRuleValue
-    let cr = value1 =!= value2
+    let cr = value1.CompareTo(value2)
     if cr = 0 then
         player1.Hand =!!= player2.Hand 
     else 
