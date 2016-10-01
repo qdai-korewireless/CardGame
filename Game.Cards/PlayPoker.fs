@@ -41,5 +41,5 @@ module PlayPoker =
 
     let sortPlayers players =
         players |> List.sortWith sortPlayerByHands 
-    let evaluate players = 
+    let evaluatePokerPlayers players = 
         players |> sortCardsForPlayers |> sortPlayers 

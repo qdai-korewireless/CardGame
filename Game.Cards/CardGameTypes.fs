@@ -19,5 +19,6 @@ module CardGameTypes =
 
     type Player = {Name:string;mutable Hand:Hand;Position:int}
 
-
+    type Games =
+        |Poker
 

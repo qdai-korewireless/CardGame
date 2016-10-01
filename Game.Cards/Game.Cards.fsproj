@@ -42,11 +42,13 @@
     <Reference Include="System.Numerics" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BindingLib.fs" />
     <Compile Include="CardGameTypes.fs" />
     <Compile Include="Card.fs" />
     <Compile Include="Player.fs" />
     <Compile Include="Poker.fs" />
     <Compile Include="PlayPoker.fs" />
+    <Compile Include="GameService.fs" />
   </ItemGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
