@@ -90,7 +90,7 @@ let sortPlayerByHands player1 player2 =
     if cr = 0 then
         player1.Hand =!!= player2.Hand 
     else 
-        cr
+        -cr
 
 let sortPlayers players =
     players |> List.sortWith sortPlayerByHands 
