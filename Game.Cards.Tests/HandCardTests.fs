@@ -2,9 +2,11 @@
 
 open FsUnit
 open NUnit.Framework
-open Game.Cards
-open Game.Player
-open Game.PlayPoker
+open Game.Cards.CardGameTypes
+open Game.Cards.Card
+open Game.Cards.Player
+open Game.Cards.Poker
+open Game.Cards.PlayPoker
 
 let shuffledDeck =
   ShuffledDeck

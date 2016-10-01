@@ -42,8 +42,10 @@
     <Reference Include="System.Numerics" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Cards.fs" />
+    <Compile Include="CardGameTypes.fs" />
+    <Compile Include="Card.fs" />
     <Compile Include="Player.fs" />
+    <Compile Include="Poker.fs" />
     <Compile Include="PlayPoker.fs" />
   </ItemGroup>
   <PropertyGroup>

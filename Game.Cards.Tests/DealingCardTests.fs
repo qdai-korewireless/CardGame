@@ -1,5 +1,5 @@
 ﻿module Game.Cards.Tests.Dealing
-open Game.Cards
+open Game.Cards.Card
 open FsUnit
 open NUnit.Framework
 
