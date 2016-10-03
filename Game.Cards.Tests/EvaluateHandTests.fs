@@ -10,7 +10,7 @@ open Game.Cards.GameService
 
 [<Test>]
 let ``should player 2 win due to high hand``() = 
-    let evaluate = getGame Poker
+    let cg = getGame Poker
     let player1 = {Name="Player 1";
                     Hand=[Card(Diamonds, Ten);Card(Diamonds, Nine);Card(Diamonds, Eight);Card(Diamonds, Seven);Card(Spades, Three)];
                     Position = 1}
@@ -22,13 +22,13 @@ let ``should player 2 win due to high hand``() =
                     Position = 3}
     let expected = [player2;player3;player1]
 
-    let actual = evaluate [player1;player2;player3]
+    let actual = cg.RankPlayers [player1;player2;player3]
 
     actual |> should equal expected
 
 [<Test>]
 let ``should player 2 win due to one pair``() = 
-    let evaluate = getGame Poker
+    let cg = getGame Poker
     let player1 = {Name="Player 1";
                     Hand=[Card(Diamonds, Five);Card(Diamonds, Ace);Card(Spades, Two);Card(Diamonds, King);Card(Diamonds, Three)];
                     Position = 1}
@@ -40,13 +40,13 @@ let ``should player 2 win due to one pair``() =
                     Position = 3}
     let expected = [player2;player3;player1]
 
-    let actual = evaluate [player1;player2;player3]
+    let actual = cg.RankPlayers [player1;player2;player3]
 
     actual |> should equal expected
 
 [<Test>]
 let ``should player 2 win due to two pairs``() = 
-    let evaluate = getGame Poker
+    let cg = getGame Poker
     let player1 = {Name="Player 1";
                     Hand=[Card(Diamonds, Five);Card(Diamonds, Ace);Card(Spades, Two);Card(Diamonds, King);Card(Diamonds, Three)];
                     Position = 1}
@@ -58,13 +58,13 @@ let ``should player 2 win due to two pairs``() =
                     Position = 3}
     let expected = [player2;player3;player1]
 
-    let actual = evaluate [player1;player2;player3]
+    let actual = cg.RankPlayers [player1;player2;player3]
 
     actual |> should equal expected
 
 [<Test>]
 let ``should player 2 win due to 3 of kind``() = 
-    let evaluate = getGame Poker
+    let cg = getGame Poker
     let player1 = {Name="Player 1";
                     Hand=[Card(Diamonds, Ten);Card(Diamonds, Nine);Card(Diamonds, Eight);Card(Diamonds, Seven);Card(Spades, Ten)];
                     Position = 1}
@@ -76,13 +76,13 @@ let ``should player 2 win due to 3 of kind``() =
                     Position = 3}
     let expected = [player2;player1;player3]
 
-    let actual = evaluate [player1;player2;player3]
+    let actual = cg.RankPlayers [player1;player2;player3]
 
     actual |> should equal expected
 
 [<Test>]
 let ``should player 2 win due to higher 3 of kind``() = 
-    let evaluate = getGame Poker
+    let cg = getGame Poker    
     let player1 = {Name="Player 1";
                     Hand=[Card(Diamonds, Ten);Card(Diamonds, Nine);Card(Diamonds, Eight);Card(Diamonds, Seven);Card(Spades, Ten)];
                     Position = 1}
@@ -94,13 +94,13 @@ let ``should player 2 win due to higher 3 of kind``() =
                     Position = 3}
     let expected = [player2;player3;player1]
 
-    let actual = evaluate [player1;player2;player3]
+    let actual = cg.RankPlayers [player1;player2;player3]
 
     actual |> should equal expected
 
 [<Test>]
 let ``should player 2 win due to 4 of kind``() = 
-    let evaluate = getGame Poker
+    let cg = getGame Poker
     let player1 = {Name="Player 1";
                     Hand=[Card(Diamonds, Ten);Card(Diamonds, Nine);Card(Diamonds, Eight);Card(Diamonds, Seven);Card(Spades, Ten)];
                     Position = 1}
@@ -112,13 +112,13 @@ let ``should player 2 win due to 4 of kind``() =
                     Position = 3}
     let expected = [player2;player3;player1]
 
-    let actual = evaluate [player1;player2;player3]
+    let actual = cg.RankPlayers [player1;player2;player3]
 
     actual |> should equal expected
 
 [<Test>]
 let ``should player 2 win due to flush``() = 
-    let evaluate = getGame Poker
+    let cg = getGame Poker
     let player1 = {Name="Player 1";
                     Hand=[Card(Clubs, Ten);Card(Diamonds, Nine);Card(Spades, Eight);Card(Diamonds, Queen);Card(Diamonds, Seven)];
                     Position = 1}
@@ -130,13 +130,13 @@ let ``should player 2 win due to flush``() =
                     Position = 3}
     let expected = [player2;player3;player1]
 
-    let actual = evaluate [player1;player2;player3]
+    let actual = cg.RankPlayers [player1;player2;player3]
 
     actual |> should equal expected
 
 [<Test>]
 let ``should player 2 win due to full house``() = 
-    let evaluate = getGame Poker
+    let cg = getGame Poker
     let player1 = {Name="Player 1";
                     Hand=[Card(Diamonds, Five);Card(Diamonds, Ace);Card(Diamonds, Two);Card(Diamonds, King);Card(Diamonds, Three)];
                     Position = 1}
@@ -148,13 +148,13 @@ let ``should player 2 win due to full house``() =
                     Position = 3}
     let expected = [player2;player1;player3]
 
-    let actual = evaluate [player1;player2;player3]
+    let actual = cg.RankPlayers [player1;player2;player3]
 
     actual |> should equal expected
 
 [<Test>]
 let ``should player 2 win due to straight``() = 
-    let evaluate = getGame Poker
+    let cg = getGame Poker
     let player1 = {Name="Player 1";
                     Hand=[Card(Diamonds, Five);Card(Hearts, Five);Card(Diamonds, Two);Card(Diamonds, King);Card(Diamonds, Three)];
                     Position = 1}
@@ -166,13 +166,13 @@ let ``should player 2 win due to straight``() =
                     Position = 3}
     let expected = [player2;player3;player1]
 
-    let actual = evaluate [player1;player2;player3]
+    let actual = cg.RankPlayers [player1;player2;player3]
 
     actual |> should equal expected
 
 [<Test>]
 let ``should player 2 win due to straight with Ace to Five``() = 
-    let evaluate = getGame Poker
+    let cg = getGame Poker
     let player1 = {Name="Player 1";
                     Hand=[Card(Diamonds, Five);Card(Hearts, Five);Card(Diamonds, Two);Card(Diamonds, King);Card(Diamonds, Three)];
                     Position = 1}
@@ -184,13 +184,13 @@ let ``should player 2 win due to straight with Ace to Five``() =
                     Position = 3}
     let expected = [player2;player3;player1]
 
-    let actual = evaluate [player1;player2;player3]
+    let actual = cg.RankPlayers [player1;player2;player3]
 
     actual |> should equal expected
 
 [<Test>]
 let ``should player 2 win due to straight flush``() = 
-    let evaluate = getGame Poker
+    let cg = getGame Poker
     let player1 = {Name="Player 1";
                     Hand=[Card(Diamonds, Five);Card(Hearts, Five);Card(Diamonds, Five);Card(Diamonds, Five);Card(Diamonds, Three)];
                     Position = 1}
@@ -202,6 +202,6 @@ let ``should player 2 win due to straight flush``() =
                     Position = 3}
     let expected = [player2;player1;player3]
 
-    let actual = evaluate [player1;player2;player3]
+    let actual = cg.RankPlayers [player1;player2;player3]
 
     actual |> should equal expected

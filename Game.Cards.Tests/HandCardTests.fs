@@ -5,8 +5,7 @@ open NUnit.Framework
 open Game.Cards.CardGameTypes
 open Game.Cards.Card
 open Game.Cards.Player
-open Game.Cards.Poker
-open Game.Cards.PlayPoker
+open Game.Cards.GameService
 
 let shuffledDeck =
   ShuffledDeck
@@ -31,6 +30,7 @@ let shuffledDeck =
 
 [<Test>]
 let ``should return 5 cards for each one of 4 players``() = 
+    let cg = getGame Poker
     let testPlayers = [{Name="Player 1";Hand=[];Position=1};
                       {Name="Player 2";Hand=[];Position=2};
                       {Name="Player 3";Hand=[];Position=3};
@@ -38,12 +38,13 @@ let ``should return 5 cards for each one of 4 players``() =
 
     let expected = [5;5;5;5]
 
-    let actual = shuffledDeck |> dealHand testPlayers 5 |> List.map (fun(p)->p.Hand |>List.length)
+    let actual = shuffledDeck |> cg.DealHands testPlayers 5 |> List.map (fun(p)->p.Hand |>List.length)
 
     actual |> should equal expected
 
 [<Test>]
 let ``should player 3 have certain cards after dealing with 4 players``() = 
+    let cg = getGame Poker
     let testPlayers = [{Name="Player 1";Hand=[];Position=1};
                       {Name="Player 2";Hand=[];Position=2};
                       {Name="Player 3";Hand=[];Position=3};
@@ -51,7 +52,7 @@ let ``should player 3 have certain cards after dealing with 4 players``() =
 
     let expected = [Card(Clubs,Two);Card(Spades,Two);Card(Hearts,Five);Card(Hearts,Eight);Card(Clubs,Seven)]
     
-    let player3 = shuffledDeck |> dealHand testPlayers 5 |> List.filter (fun(p) -> p.Name = "Player 3") |> List.head
+    let player3 = shuffledDeck |> cg.DealHands testPlayers 5 |> List.filter (fun(p) -> p.Name = "Player 3") |> List.head
     let actual = player3.Hand
 
     actual |> should equal expected

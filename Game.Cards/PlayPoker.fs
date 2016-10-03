@@ -2,7 +2,6 @@
 open Card
 open Player
 open Poker
-
 module PlayPoker =
 
     let (=!!=) (hand1:Hand) (hand2:Hand) = 
@@ -10,7 +9,7 @@ module PlayPoker =
         let v2 = hand2 |> Seq.map(rankScore) |> Seq.toArray
         if v1 > v2 then -1 else if v1< v2 then 1 else 0
 
-    let dealHand players numOfCardsEachPlayer deck: Player list = 
+    let dealHand players numOfCardsEachPlayer deck =
         let numOfPlayers = players |> List.length
         let iter = numOfPlayers * numOfCardsEachPlayer-1
         let mutable remDeck = deck
@@ -43,3 +42,6 @@ module PlayPoker =
         players |> List.sortWith sortPlayerByHands 
     let evaluatePokerPlayers players = 
         players |> sortCardsForPlayers |> sortPlayers 
+
+    let create() =
+        {DealHands = dealHand; RankPlayers = evaluatePokerPlayers}

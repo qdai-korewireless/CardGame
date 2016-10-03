@@ -19,6 +19,10 @@ module CardGameTypes =
 
     type Player = {Name:string;mutable Hand:Hand;Position:int}
 
+    type RankPlayersFn = Player list -> Player list
+    type DealHandsFn = Player list -> int -> ShuffledDeck -> Player list
+    type CardGame = {RankPlayers : RankPlayersFn; DealHands : DealHandsFn}
+
     type Games =
         |Poker
 
